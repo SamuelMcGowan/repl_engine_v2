@@ -1,5 +1,7 @@
 # Repl Engine (2)
 
+Successor to previous attempt.
+
 ## Goals
 - Reliable
     - proper unicode handling
