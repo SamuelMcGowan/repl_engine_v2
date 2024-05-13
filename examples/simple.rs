@@ -11,11 +11,8 @@ fn main() -> io::Result<()> {
                 println!("{output:?}");
             }
 
-            Signal::Interrupted => {
-                eprintln!("Ctrl-C: Interrupted");
-            }
+            Signal::Interrupted => {}
             Signal::EOF => {
-                eprintln!("Ctrl-D: EOF");
                 return Ok(());
             }
         }

@@ -53,7 +53,10 @@ impl PaintBuffer {
 
     /// Expects the terminal to be in raw mode.
     pub fn paint(&mut self, prompt: &str, input: &str, cursor: Vec2) -> io::Result<()> {
-        let num_lines = prompt.lines().count();
+        let num_lines = prompt.chars().filter(|&ch| ch == '\n').count()
+            + input.chars().filter(|&ch| ch == '\n').count()
+            + 1;
+
         self.reserve_lines(num_lines as u16)?;
 
         // setup
