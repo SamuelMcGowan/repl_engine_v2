@@ -3,6 +3,7 @@ use std::io::{self, Stdout, Write};
 
 use crossterm::{cursor, execute, queue, style, terminal};
 
+use crate::string_info::StringInfo;
 use crate::vec2::Vec2;
 
 pub struct PaintBuffer {
@@ -53,11 +54,12 @@ impl PaintBuffer {
 
     /// Expects the terminal to be in raw mode.
     pub fn paint(&mut self, prompt: &str, input: &str, cursor: Vec2) -> io::Result<()> {
-        let num_lines = prompt.chars().filter(|&ch| ch == '\n').count()
-            + input.chars().filter(|&ch| ch == '\n').count()
-            + 1;
+        let indent = prompt.byte_to_position(prompt.len()).x;
 
-        self.reserve_lines(num_lines as u16)?;
+        let prompt_lines = prompt.chars().filter(|&ch| ch == '\n').count();
+        let total_lines = 1 + prompt_lines + input.chars().filter(|&ch| ch == '\n').count();
+
+        self.reserve_lines(total_lines as u16)?;
 
         // setup
         queue!(
@@ -67,12 +69,22 @@ impl PaintBuffer {
         )?;
 
         // paint
-        queue!(self.stdout, style::Print(Displayer { prompt, input }),)?;
+        queue!(
+            self.stdout,
+            style::Print(Displayer {
+                s: prompt,
+                indent: 0,
+            }),
+            style::Print(Displayer {
+                s: input,
+                indent: indent as usize
+            }),
+        )?;
 
         self.cursor_line = cursor.y;
 
-        let cursor_column = prompt.len() as u16 + cursor.x;
-        let cursor_line = self.buffer_start + cursor.y;
+        let cursor_column = indent + cursor.x;
+        let cursor_line = self.buffer_start + prompt_lines as u16 + cursor.y;
 
         queue!(self.stdout, cursor::MoveTo(cursor_column, cursor_line),)?;
 
@@ -126,21 +138,19 @@ impl Drop for PaintBuffer {
 }
 
 struct Displayer<'a> {
-    prompt: &'a str,
-    input: &'a str,
+    s: &'a str,
+    indent: usize,
 }
 
 impl fmt::Display for Displayer<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.prompt)?;
-
-        for ch in self.input.chars() {
+        for ch in self.s.chars() {
             match ch {
                 '\r' => {}
                 '\n' => {
                     write!(f, "\r\n")?;
 
-                    for _ in 0..self.prompt.len() {
+                    for _ in 0..self.indent {
                         write!(f, " ")?;
                     }
                 }

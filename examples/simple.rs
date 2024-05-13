@@ -6,7 +6,7 @@ fn main() -> io::Result<()> {
     let mut repl = Repl::new();
 
     loop {
-        match repl.read_line(">> ").unwrap() {
+        match repl.read_line("\n|\n|-> ").unwrap() {
             Signal::Submit(output) => {
                 println!("{output:?}");
             }
