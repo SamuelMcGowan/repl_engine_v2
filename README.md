@@ -1,6 +1,4 @@
-# Repl Engine (2)
-
-Successor to previous attempt.
+# Repl Engine
 
 ## Goals
 - Reliable
