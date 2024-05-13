@@ -36,7 +36,10 @@ impl Repl {
 
         macro_rules! repaint {
             () => {
-                paint_buffer.paint(self.editor.as_str(), self.editor.cursor_pos())?;
+                paint_buffer.paint(self.editor.as_str(), self.editor.cursor_pos(), None)?;
+            };
+            ($note:expr) => {
+                paint_buffer.paint(self.editor.as_str(), self.editor.cursor_pos(), Some($note))?;
             };
         }
 
@@ -51,11 +54,15 @@ impl Repl {
                     state: _,
                 }) => match (modifiers, code) {
                     (KeyModifiers::CONTROL, KeyCode::Char('c')) => {
-                        self.editor.clear();
-                        return Ok(Signal::Interrupted);
+                        if !self.editor.as_str().is_empty() {
+                            repaint!("^C");
+                            self.editor.clear();
+                            return Ok(Signal::Interrupted);
+                        }
                     }
                     (KeyModifiers::CONTROL, KeyCode::Char('d')) => {
-                        return Ok(Signal::EOF);
+                        repaint!("^D");
+                        return Ok(Signal::Eof);
                     }
 
                     (KeyModifiers::CONTROL, KeyCode::Char('l')) => {

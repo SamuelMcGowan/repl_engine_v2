@@ -19,7 +19,7 @@ fn main() -> io::Result<()> {
             }
 
             Signal::Interrupted => {}
-            Signal::EOF => {
+            Signal::Eof => {
                 return Ok(());
             }
         }

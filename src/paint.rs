@@ -1,6 +1,7 @@
 use std::fmt;
 use std::io::{self, Stdout, Write};
 
+use crossterm::style::Stylize;
 use crossterm::{cursor, execute, queue, style, terminal};
 
 use crate::vec2::Vec2;
@@ -50,14 +51,8 @@ impl PaintBuffer {
         Ok(())
     }
 
-    // pub fn clear_screen(&mut self) -> io::Result<()> {
-    //     self.buffer_start = 0;
-    //     self.indent = 0;
-    //     queue!(self.stdout, terminal::Clear(terminal::ClearType::All))
-    // }
-
     /// Expects the terminal to be in raw mode.
-    pub fn paint(&mut self, input: &str, cursor: Vec2) -> io::Result<()> {
+    pub fn paint(&mut self, input: &str, cursor: Vec2, note: Option<&str>) -> io::Result<()> {
         let total_lines = 1 + input.chars().filter(|&ch| ch == '\n').count();
 
         self.reserve_lines(total_lines as u16)?;
@@ -83,7 +78,16 @@ impl PaintBuffer {
         let cursor_column = self.indent + cursor.x;
         let cursor_line = self.buffer_start + cursor.y;
 
-        queue!(self.stdout, cursor::MoveTo(cursor_column, cursor_line),)?;
+        if let Some(note) = note {
+            write!(
+                self.stdout,
+                "{}{}",
+                if input.is_empty() { "" } else { " " },
+                note.black().on_white()
+            )?;
+        }
+
+        queue!(self.stdout, cursor::MoveTo(cursor_column, cursor_line))?;
 
         self.stdout.flush()?;
 

@@ -40,5 +40,5 @@ pub enum Signal {
     Clear,
 
     Interrupted,
-    EOF,
+    Eof,
 }
