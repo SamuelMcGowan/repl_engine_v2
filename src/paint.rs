@@ -3,7 +3,6 @@ use std::io::{self, Stdout, Write};
 
 use crossterm::{cursor, execute, queue, style, terminal};
 
-use crate::string_info::StringInfo;
 use crate::vec2::Vec2;
 
 pub struct PaintBuffer {
@@ -15,6 +14,8 @@ pub struct PaintBuffer {
     buffer_reserved: u16,
 
     cursor_line: u16,
+
+    indent: u16,
 }
 
 impl PaintBuffer {
@@ -27,6 +28,8 @@ impl PaintBuffer {
             buffer_start: 0,
             buffer_reserved: 0,
             cursor_line: 0,
+
+            indent: cursor::position()?.0,
         };
 
         let (width, height) = terminal::size()?;
@@ -53,18 +56,15 @@ impl PaintBuffer {
     }
 
     /// Expects the terminal to be in raw mode.
-    pub fn paint(&mut self, prompt: &str, input: &str, cursor: Vec2) -> io::Result<()> {
-        let indent = prompt.byte_to_position(prompt.len()).x;
-
-        let prompt_lines = prompt.chars().filter(|&ch| ch == '\n').count();
-        let total_lines = 1 + prompt_lines + input.chars().filter(|&ch| ch == '\n').count();
+    pub fn paint(&mut self, input: &str, cursor: Vec2) -> io::Result<()> {
+        let total_lines = 1 + input.chars().filter(|&ch| ch == '\n').count();
 
         self.reserve_lines(total_lines as u16)?;
 
         // setup
         queue!(
             self.stdout,
-            cursor::MoveTo(0, self.buffer_start),
+            cursor::MoveTo(self.indent, self.buffer_start),
             terminal::Clear(terminal::ClearType::FromCursorDown)
         )?;
 
@@ -72,19 +72,15 @@ impl PaintBuffer {
         queue!(
             self.stdout,
             style::Print(Displayer {
-                s: prompt,
-                indent: 0,
-            }),
-            style::Print(Displayer {
                 s: input,
-                indent: indent as usize
+                indent: self.indent as usize
             }),
         )?;
 
         self.cursor_line = cursor.y;
 
-        let cursor_column = indent + cursor.x;
-        let cursor_line = self.buffer_start + prompt_lines as u16 + cursor.y;
+        let cursor_column = self.indent + cursor.x;
+        let cursor_line = self.buffer_start + cursor.y;
 
         queue!(self.stdout, cursor::MoveTo(cursor_column, cursor_line),)?;
 

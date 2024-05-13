@@ -27,21 +27,21 @@ impl Repl {
         Self::default()
     }
 
-    pub fn read_line(&mut self, prompt: &str) -> ReplResult<Signal> {
+    pub fn read_line(&mut self) -> ReplResult<Signal> {
         crossterm::terminal::enable_raw_mode()?;
-        let res = self.read_line_inner(prompt);
+        let res = self.read_line_inner();
         crossterm::terminal::disable_raw_mode()?;
         res
     }
 
-    fn read_line_inner(&mut self, prompt: &str) -> ReplResult<Signal> {
+    fn read_line_inner(&mut self) -> ReplResult<Signal> {
         use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
         let mut paint_buffer = PaintBuffer::new()?;
 
         macro_rules! repaint {
             () => {
-                paint_buffer.paint(prompt, self.editor.as_str(), self.editor.cursor_pos())?;
+                paint_buffer.paint(self.editor.as_str(), self.editor.cursor_pos())?;
             };
         }
 
