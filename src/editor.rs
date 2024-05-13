@@ -56,6 +56,28 @@ impl Editor {
         }
     }
 
+    pub fn delete_word(&mut self) {
+        let prev_cursor_byte = self.cursor_byte;
+        self.move_right_word();
+
+        let word = &self.s[prev_cursor_byte..self.cursor_byte];
+        self.num_lines -= word.chars().filter(|&ch| ch == '\n').count();
+
+        self.s.replace_range(prev_cursor_byte..self.cursor_byte, "");
+
+        self.cursor_byte = prev_cursor_byte;
+    }
+
+    pub fn backspace_word(&mut self) {
+        let prev_cursor_byte = self.cursor_byte;
+        self.move_left_word();
+
+        let word = &self.s[self.cursor_byte..prev_cursor_byte];
+        self.num_lines -= word.chars().filter(|&ch| ch == '\n').count();
+
+        self.s.replace_range(self.cursor_byte..prev_cursor_byte, "");
+    }
+
     pub fn move_left(&mut self) -> bool {
         if let Some(ch) = self.before_cursor().chars().next_back() {
             self.cursor_byte -= ch.len_utf8();

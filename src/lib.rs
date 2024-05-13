@@ -71,6 +71,14 @@ impl Repl {
                         self.editor.delete_char();
                     }
 
+                    (KeyModifiers::CONTROL, KeyCode::Char('w')) => {
+                        self.editor.backspace_word();
+                    }
+
+                    (KeyModifiers::ALT, KeyCode::Char('d')) => {
+                        self.editor.delete_word();
+                    }
+
                     (KeyModifiers::NONE, KeyCode::Left) => {
                         self.editor.move_left();
                     }
@@ -96,7 +104,7 @@ impl Repl {
                         self.editor.move_end();
                     }
 
-                    (KeyModifiers::SHIFT, KeyCode::Enter) => {
+                    (KeyModifiers::ALT, KeyCode::Enter) => {
                         self.editor.insert_char('\n');
                     }
                     (KeyModifiers::NONE, KeyCode::Enter) => {
