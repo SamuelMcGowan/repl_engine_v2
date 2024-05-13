@@ -6,9 +6,9 @@ fn main() -> io::Result<()> {
     let mut repl = Repl::new();
 
     loop {
-        match repl.read_line("\n|\n|-> ").unwrap() {
+        match repl.read_line("\n╭ ~/username\n╰ ").unwrap() {
             Signal::Submit(output) => {
-                println!("{output:?}");
+                println!("\n{output:?}");
             }
 
             Signal::Interrupted => {}
