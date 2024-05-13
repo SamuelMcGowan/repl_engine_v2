@@ -1,3 +1,5 @@
+mod editor;
+mod event;
 mod paint;
 mod string_info;
 mod vec2;
