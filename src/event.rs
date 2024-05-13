@@ -14,15 +14,28 @@ pub enum EditorCommand {
     MoveUp,
     MoveDown,
 
-    MoveLeftToken,
-    MoveRightToken,
+    MoveLeftWord,
+    MoveRightWord,
 
     MoveHome,
     MoveEnd,
+
+    Submit,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ControlFlow {
-    Continue,
+pub enum MenuCommand {
+    MoveLeft,
+    MoveRight,
+
+    MoveDown,
+    MoveUp,
+
     Submit,
+}
+
+pub enum Signal {
+    Submit,
+
+    Interrupted,
+    EOF,
 }

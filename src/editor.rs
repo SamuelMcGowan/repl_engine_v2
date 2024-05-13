@@ -1,6 +1,8 @@
-use crate::event::{ControlFlow, EditorCommand};
+use std::ops::ControlFlow;
 
-#[derive(Default)]
+use crate::event::{EditorCommand, Signal};
+use crate::string_info::StringInfo;
+
 pub struct Editor {
     s: String,
     num_lines: usize,
@@ -8,7 +10,21 @@ pub struct Editor {
     cursor_byte: usize,
 }
 
+impl Default for Editor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Editor {
+    pub fn new() -> Self {
+        Self {
+            s: String::new(),
+            num_lines: 0,
+            cursor_byte: 0,
+        }
+    }
+
     pub fn insert_char(&mut self, ch: char) {
         self.s.insert(self.cursor_byte, ch);
         self.cursor_byte += ch.len_utf8();
@@ -57,6 +73,46 @@ impl Editor {
         }
     }
 
+    pub fn move_up(&mut self) {
+        let mut pos = self.s.byte_to_position(self.cursor_byte);
+
+        if pos.y == 0 {
+            self.cursor_byte = 0;
+        } else {
+            pos.y -= 1;
+            self.cursor_byte = self.s.position_to_byte(pos);
+        }
+    }
+
+    pub fn move_down(&mut self) {
+        let mut pos = self.s.byte_to_position(self.cursor_byte);
+        pos.y += 1;
+
+        if pos.y as usize == self.num_lines {
+            self.cursor_byte = self.s.len();
+        } else {
+            self.cursor_byte = self.s.position_to_byte(pos);
+        }
+    }
+
+    pub fn move_left_word(&mut self) -> usize {
+        let new_cursor_byte = self.before_cursor().trim_end_matches(is_word).len();
+
+        let diff = self.cursor_byte - new_cursor_byte;
+        self.cursor_byte = new_cursor_byte;
+
+        diff
+    }
+
+    pub fn move_right_word(&mut self) -> usize {
+        let new_cursor_byte = self.s.len() - self.after_cursor().trim_start_matches(is_word).len();
+
+        let diff = new_cursor_byte - self.cursor_byte;
+        self.cursor_byte = new_cursor_byte;
+
+        diff
+    }
+
     pub fn move_home(&mut self) {
         self.cursor_byte = 0;
     }
@@ -83,19 +139,15 @@ impl Editor {
 }
 
 pub trait Handler<Command> {
-    fn handle(&mut self, command: Command) -> Option<ControlFlow>;
+    fn handle(&mut self, command: Command) -> Option<ControlFlow<Signal>>;
 }
 
 impl Handler<EditorCommand> for Editor {
-    fn handle(&mut self, command: EditorCommand) -> Option<ControlFlow> {
+    fn handle(&mut self, command: EditorCommand) -> Option<ControlFlow<Signal>> {
         let handled = match command {
             EditorCommand::InsertChar(ch) => {
-                if ch == '\n' {
-                    return Some(ControlFlow::Submit);
-                } else {
-                    self.insert_char(ch);
-                    true
-                }
+                self.insert_char(ch);
+                true
             }
 
             EditorCommand::InsertString(s) => {
@@ -111,6 +163,7 @@ impl Handler<EditorCommand> for Editor {
                 self.backspace_char();
                 true
             }
+
             EditorCommand::MoveLeft => {
                 self.move_left();
                 true
@@ -119,14 +172,40 @@ impl Handler<EditorCommand> for Editor {
                 self.move_right();
                 true
             }
-            EditorCommand::MoveUp => todo!(),
-            EditorCommand::MoveDown => todo!(),
-            EditorCommand::MoveLeftToken => todo!(),
-            EditorCommand::MoveRightToken => todo!(),
-            EditorCommand::MoveHome => todo!(),
-            EditorCommand::MoveEnd => todo!(),
+            EditorCommand::MoveUp => {
+                self.move_up();
+                true
+            }
+            EditorCommand::MoveDown => {
+                self.move_down();
+                true
+            }
+
+            EditorCommand::MoveLeftWord => {
+                self.move_left_word();
+                true
+            }
+            EditorCommand::MoveRightWord => {
+                self.move_right_word();
+                true
+            }
+
+            EditorCommand::MoveHome => {
+                self.move_home();
+                true
+            }
+            EditorCommand::MoveEnd => {
+                self.move_end();
+                true
+            }
+
+            EditorCommand::Submit => return Some(ControlFlow::Break(Signal::Submit)),
         };
 
-        handled.then_some(ControlFlow::Continue)
+        handled.then_some(ControlFlow::Continue(()))
     }
+}
+
+fn is_word(ch: char) -> bool {
+    ch.is_alphanumeric() || ch == '-' || ch == '_'
 }
