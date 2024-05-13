@@ -1,6 +1,3 @@
-use std::ops::ControlFlow;
-
-use crate::event::{EditorCommand, Signal};
 use crate::string_info::StringInfo;
 use crate::Vec2;
 
@@ -152,10 +149,6 @@ impl Editor {
         &self.s
     }
 
-    pub fn cursor_byte(&self) -> usize {
-        self.cursor_byte
-    }
-
     pub fn cursor_pos(&self) -> Vec2 {
         self.s.byte_to_position(self.cursor_byte)
     }
@@ -178,74 +171,6 @@ impl Editor {
         self.s.clear();
         self.cursor_byte = 0;
         self.num_lines = 1;
-    }
-}
-
-pub trait Handler<Command> {
-    fn handle(&mut self, command: Command) -> Option<ControlFlow<Signal>>;
-}
-
-impl Handler<EditorCommand> for Editor {
-    fn handle(&mut self, command: EditorCommand) -> Option<ControlFlow<Signal>> {
-        let handled = match command {
-            EditorCommand::InsertChar(ch) => {
-                self.insert_char(ch);
-                true
-            }
-
-            EditorCommand::InsertString(s) => {
-                self.insert_str(&s);
-                true
-            }
-
-            EditorCommand::DeleteChar | EditorCommand::DeleteToken => {
-                self.delete_char();
-                true
-            }
-            EditorCommand::BackspaceChar | EditorCommand::BackspaceToken => {
-                self.backspace_char();
-                true
-            }
-
-            EditorCommand::MoveLeft => {
-                self.move_left();
-                true
-            }
-            EditorCommand::MoveRight => {
-                self.move_right();
-                true
-            }
-            EditorCommand::MoveUp => {
-                self.move_up();
-                true
-            }
-            EditorCommand::MoveDown => {
-                self.move_down();
-                true
-            }
-
-            EditorCommand::MoveLeftWord => {
-                self.move_left_word();
-                true
-            }
-            EditorCommand::MoveRightWord => {
-                self.move_right_word();
-                true
-            }
-
-            EditorCommand::MoveHome => {
-                self.move_home();
-                true
-            }
-            EditorCommand::MoveEnd => {
-                self.move_end();
-                true
-            }
-
-            EditorCommand::Submit => return Some(ControlFlow::Break(Signal::Submit(self.take()))),
-        };
-
-        handled.then_some(ControlFlow::Continue(()))
     }
 }
 

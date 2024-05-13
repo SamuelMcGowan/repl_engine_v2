@@ -1,37 +1,37 @@
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum EditorCommand {
-    InsertChar(char),
-    InsertString(String),
+// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+// pub enum EditorCommand {
+//     InsertChar(char),
+//     InsertString(String),
 
-    DeleteChar,
-    DeleteToken,
+//     DeleteChar,
+//     DeleteToken,
 
-    BackspaceChar,
-    BackspaceToken,
+//     BackspaceChar,
+//     BackspaceToken,
 
-    MoveLeft,
-    MoveRight,
-    MoveUp,
-    MoveDown,
+//     MoveLeft,
+//     MoveRight,
+//     MoveUp,
+//     MoveDown,
 
-    MoveLeftWord,
-    MoveRightWord,
+//     MoveLeftWord,
+//     MoveRightWord,
 
-    MoveHome,
-    MoveEnd,
+//     MoveHome,
+//     MoveEnd,
 
-    Submit,
-}
+//     Submit,
+// }
 
-pub enum MenuCommand {
-    MoveLeft,
-    MoveRight,
+// pub enum MenuCommand {
+//     MoveLeft,
+//     MoveRight,
 
-    MoveDown,
-    MoveUp,
+//     MoveDown,
+//     MoveUp,
 
-    Submit,
-}
+//     Submit,
+// }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Signal {
