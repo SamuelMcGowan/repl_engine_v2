@@ -2,6 +2,7 @@ use std::ops::ControlFlow;
 
 use crate::event::{EditorCommand, Signal};
 use crate::string_info::StringInfo;
+use crate::Vec2;
 
 pub struct Editor {
     s: String,
@@ -96,6 +97,8 @@ impl Editor {
     }
 
     pub fn move_left_word(&mut self) -> usize {
+        self.move_left();
+
         let new_cursor_byte = self.before_cursor().trim_end_matches(is_word).len();
 
         let diff = self.cursor_byte - new_cursor_byte;
@@ -105,6 +108,8 @@ impl Editor {
     }
 
     pub fn move_right_word(&mut self) -> usize {
+        self.move_right();
+
         let new_cursor_byte = self.s.len() - self.after_cursor().trim_start_matches(is_word).len();
 
         let diff = new_cursor_byte - self.cursor_byte;
@@ -129,12 +134,28 @@ impl Editor {
         self.cursor_byte
     }
 
+    pub fn cursor_pos(&self) -> Vec2 {
+        self.s.byte_to_position(self.cursor_byte)
+    }
+
     fn before_cursor(&self) -> &str {
         &self.s[..self.cursor_byte]
     }
 
     fn after_cursor(&self) -> &str {
         &self.s[self.cursor_byte..]
+    }
+
+    pub fn take(&mut self) -> String {
+        let s = self.s.clone();
+        self.clear();
+        s
+    }
+
+    pub fn clear(&mut self) {
+        self.s.clear();
+        self.cursor_byte = 0;
+        self.num_lines = 1;
     }
 }
 
@@ -199,7 +220,7 @@ impl Handler<EditorCommand> for Editor {
                 true
             }
 
-            EditorCommand::Submit => return Some(ControlFlow::Break(Signal::Submit)),
+            EditorCommand::Submit => return Some(ControlFlow::Break(Signal::Submit(self.take()))),
         };
 
         handled.then_some(ControlFlow::Continue(()))

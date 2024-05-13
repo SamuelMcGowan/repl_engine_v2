@@ -1,15 +1,23 @@
 use std::io;
 
-use repl_engine2::{PaintBuffer, Vec2};
+use repl_engine2::{Repl, Signal};
 
 fn main() -> io::Result<()> {
-    let mut paintbuf = PaintBuffer::new()?;
+    let mut repl = Repl::new();
 
-    crossterm::terminal::enable_raw_mode()?;
-    paintbuf.paint(">> ", "hello\nworld", Vec2::new(0, 1))?;
-    crossterm::terminal::disable_raw_mode()?;
+    loop {
+        match repl.read_line(">> ").unwrap() {
+            Signal::Submit(output) => {
+                println!("{output:?}");
+            }
 
-    loop {}
-
-    Ok(())
+            Signal::Interrupted => {
+                eprintln!("Ctrl-C: Interrupted");
+            }
+            Signal::EOF => {
+                eprintln!("Ctrl-D: EOF");
+                return Ok(());
+            }
+        }
+    }
 }

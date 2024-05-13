@@ -33,8 +33,9 @@ pub enum MenuCommand {
     Submit,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Signal {
-    Submit,
+    Submit(String),
 
     Interrupted,
     EOF,
