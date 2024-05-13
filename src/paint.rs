@@ -50,10 +50,11 @@ impl PaintBuffer {
         Ok(())
     }
 
-    pub fn clear_screen(&mut self) -> io::Result<()> {
-        self.buffer_start = 0;
-        queue!(self.stdout, terminal::Clear(terminal::ClearType::Purge))
-    }
+    // pub fn clear_screen(&mut self) -> io::Result<()> {
+    //     self.buffer_start = 0;
+    //     self.indent = 0;
+    //     queue!(self.stdout, terminal::Clear(terminal::ClearType::All))
+    // }
 
     /// Expects the terminal to be in raw mode.
     pub fn paint(&mut self, input: &str, cursor: Vec2) -> io::Result<()> {

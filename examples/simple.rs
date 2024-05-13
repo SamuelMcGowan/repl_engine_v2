@@ -7,11 +7,15 @@ fn main() -> io::Result<()> {
 
     loop {
         print!("\n╭ ~/username\n╰ ");
-        std::io::stdout().flush().unwrap();
+        std::io::stdout().flush()?;
 
         match repl.read_line().unwrap() {
             Signal::Submit(output) => {
                 println!("\n{output:?}");
+            }
+
+            Signal::Clear => {
+                repl.clear_screen()?;
             }
 
             Signal::Interrupted => {}

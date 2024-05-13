@@ -37,6 +37,8 @@ pub enum MenuCommand {
 pub enum Signal {
     Submit(String),
 
+    Clear,
+
     Interrupted,
     EOF,
 }

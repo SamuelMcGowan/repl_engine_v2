@@ -4,18 +4,13 @@ mod paint;
 mod string_info;
 mod vec2;
 
+use std::io;
+
+use crossterm::{cursor, terminal};
 use editor::Editor;
 pub use event::Signal;
 pub use paint::PaintBuffer;
 use vec2::Vec2;
-
-#[derive(thiserror::Error, Debug)]
-pub enum ReplError {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-}
-
-pub type ReplResult<T> = Result<T, ReplError>;
 
 #[derive(Default)]
 pub struct Repl {
@@ -27,14 +22,14 @@ impl Repl {
         Self::default()
     }
 
-    pub fn read_line(&mut self) -> ReplResult<Signal> {
-        crossterm::terminal::enable_raw_mode()?;
+    pub fn read_line(&mut self) -> io::Result<Signal> {
+        terminal::enable_raw_mode()?;
         let res = self.read_line_inner();
-        crossterm::terminal::disable_raw_mode()?;
+        terminal::disable_raw_mode()?;
         res
     }
 
-    fn read_line_inner(&mut self) -> ReplResult<Signal> {
+    fn read_line_inner(&mut self) -> io::Result<Signal> {
         use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
         let mut paint_buffer = PaintBuffer::new()?;
@@ -61,6 +56,10 @@ impl Repl {
                     }
                     (KeyModifiers::CONTROL, KeyCode::Char('d')) => {
                         return Ok(Signal::EOF);
+                    }
+
+                    (KeyModifiers::CONTROL, KeyCode::Char('l')) => {
+                        return Ok(Signal::Clear);
                     }
 
                     (KeyModifiers::NONE, KeyCode::Backspace) => {
@@ -131,5 +130,13 @@ impl Repl {
 
             repaint!();
         }
+    }
+
+    pub fn clear_screen(&mut self) -> io::Result<()> {
+        crossterm::execute!(
+            std::io::stdout(),
+            terminal::Clear(crossterm::terminal::ClearType::All),
+            cursor::MoveTo(0, 0),
+        )
     }
 }
